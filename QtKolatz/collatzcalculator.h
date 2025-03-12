@@ -3,7 +3,6 @@
 
 #include <QtGlobal>
 #include <atomic>
-#include <stdexcept>
 #include <QString>
 
 // Structure to store the full calculation result for a range.
