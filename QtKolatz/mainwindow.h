@@ -22,18 +22,23 @@ public:
 private slots:
     void onStartClicked();
     void onStopClicked();
+    void onTestClicked();
 
 private:
     // UI elements
     QPushButton *exitButton;
     QPushButton *startButton;
     QPushButton *stopButton;
+    QPushButton *testButton;
     QSlider     *threadSlider;
     QSpinBox    *limitSpinBox;
     QTextEdit   *outputTextEdit;
 
     std::atomic_bool stopFlag;
     QFutureWatcher<CollatzResult> *calcWatcher;
+
+    quint64 currentLimit;
+    int currentNumThreads;
 
     void resetUI();
 };
