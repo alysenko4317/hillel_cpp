@@ -9,9 +9,11 @@
 #include <QLabel>
 #include <QThread>
 #include <QApplication>
+#include <QtConcurrent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , stopFlag(false)
 {
     // Create a central widget and the main layout
     QWidget *centralWidget = new QWidget(this);
@@ -62,6 +64,21 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addLayout(spinBoxLayout);
     mainLayout->addWidget(outputTextEdit);
 
+    // Initialize the calculation watcher
+    calcWatcher = new QFutureWatcher<CollatzResult>(this);
+    connect(calcWatcher, &QFutureWatcher<CollatzResult>::finished, this, [this]() {
+        CollatzResult result = calcWatcher->result();
+        if (stopFlag.load()) {
+            outputTextEdit->append("Обчислення перервано користувачем.");
+        } else {
+            outputTextEdit->append(QString("Найдовший ланцюг у діапазоні: %1\nДовжина ланцюга: %2\nЧас обчислень: %3 мс")
+                                       .arg(result.bestNumber)
+                                       .arg(result.bestLength)
+                                       .arg(result.timeMs));
+        }
+        resetUI();
+    });
+
     // Connect signals and slots
     connect(exitButton,  &QPushButton::clicked, this, &MainWindow::close);
     connect(startButton, &QPushButton::clicked, this, &MainWindow::onStartClicked);
@@ -70,7 +87,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    // TODO: If you had any manual allocations, clean them here
+    // If a calculation is running, signal it to stop
+    stopFlag.store(true);
+    calcWatcher->cancel();
+    calcWatcher->waitForFinished();
 }
 
 void MainWindow::onStartClicked()
@@ -79,20 +99,26 @@ void MainWindow::onStartClicked()
     startButton->setEnabled(false);
     stopButton->setEnabled(true);
 
+    outputTextEdit->clear();
     outputTextEdit->append("Розрахунки запущено...");
 
-    // TODO: Here you would start your Collatz calculation in multiple threads
+    // Reset the stop flag
+    stopFlag.store(false);
+
+    // Get parameters from the UI
+    quint64 limit = limitSpinBox->value();
+    int numThreads = threadSlider->value();
+
+    // Launch the Collatz calculation asynchronously using the CollatzCalculator module
+    QFuture<CollatzResult> future = QtConcurrent::run(&CollatzCalculator::calculate, limit, numThreads, std::ref(stopFlag));
+    calcWatcher->setFuture(future);
 }
 
 void MainWindow::onStopClicked()
 {
-    // Re-enable Start, disable Stop
-    startButton->setEnabled(true);
-    stopButton->setEnabled(false);
-
-    outputTextEdit->append("Розрахунки зупинено.");
-
-    // TODO: If your threads are running, signal them to stop
+    // Signal cancellation of the calculation
+    stopFlag.store(true);
+    outputTextEdit->append("Зупинка обчислень...");
 }
 
 void MainWindow::resetUI()

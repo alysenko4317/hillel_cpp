@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <atomic>
+#include <QFutureWatcher>
+#include "collatzcalculator.h"  // Collatz calculation module
 
 class QPushButton;
 class QSlider;
@@ -28,6 +31,9 @@ private:
     QSlider     *threadSlider;
     QSpinBox    *limitSpinBox;
     QTextEdit   *outputTextEdit;
+
+    std::atomic_bool stopFlag;
+    QFutureWatcher<CollatzResult> *calcWatcher;
 
     void resetUI();
 };
