@@ -10,6 +10,7 @@
 #include <QThread>
 #include <QApplication>
 #include <QtConcurrent>
+#include <stdexcept>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -71,19 +72,35 @@ MainWindow::MainWindow(QWidget *parent)
     // Initialize the calculation watcher
     calcWatcher = new QFutureWatcher<CollatzResult>(this);
     connect(calcWatcher, &QFutureWatcher<CollatzResult>::finished, this, [this]() {
-        CollatzResult result = calcWatcher->result();
-        outputTextEdit->append("----- Результати обчислень -----");
-        outputTextEdit->append(QString("Верхня межа: %1").arg(currentLimit));
-        outputTextEdit->append(QString("Використано потоків: %1").arg(currentNumThreads));
-        if (stopFlag.load()) {
-            outputTextEdit->append("Обчислення перервано користувачем.");
-        } else {
-            outputTextEdit->append(QString("Найдовший ланцюг у діапазоні: %1")
-                                       .arg(result.bestNumber));
-            outputTextEdit->append(QString("Довжина ланцюга: %1").arg(result.bestLength));
-            outputTextEdit->append(QString("Час обчислень: %1 мс").arg(result.timeMs));
+        try {
+            CollatzResult result = calcWatcher->result();
+            outputTextEdit->append("----- Результати обчислень -----");
+            outputTextEdit->append(QString("Верхня межа: %1").arg(currentLimit));
+            outputTextEdit->append(QString("Використано потоків: %1").arg(currentNumThreads));
+            if (stopFlag.load()) {
+                outputTextEdit->append("Обчислення перервано користувачем.");
+            } else {
+                outputTextEdit->append(QString("Найдовший ланцюг у діапазоні: %1")
+                                           .arg(result.bestNumber));
+                outputTextEdit->append(QString("Довжина ланцюга: %1").arg(result.bestLength));
+                outputTextEdit->append(QString("Час обчислень: %1 мс").arg(result.timeMs));
+            }
+            outputTextEdit->append("----- Кінець обчислень -----");
         }
-        outputTextEdit->append("----- Кінець обчислень -----");
+        catch (const QUnhandledException &ex) {
+            try {
+                // Watchout for: QUnhandledException Example how to handle it (to unwrap your exception):
+                // https://stackoverflow.com/questions/76063090/how-to-propagate-exceptions-to-the-main-thread-from-a-qtconcurrentrun-with-pro
+                std::rethrow_exception(ex.exception());
+            } catch (const std::exception &e) {
+                outputTextEdit->append(QString("Error: %1").arg(e.what()));
+            } catch (...) {
+                outputTextEdit->append(QString("Unknown exception caught in QUnhandledException"));
+            }
+        }
+        catch (const std::exception &e) {
+            outputTextEdit->append(QString("Error: %1").arg(e.what()));
+        }
         resetUI();
     });
 
@@ -91,15 +108,17 @@ MainWindow::MainWindow(QWidget *parent)
     connect(exitButton,  &QPushButton::clicked, this, &MainWindow::close);
     connect(startButton, &QPushButton::clicked, this, &MainWindow::onStartClicked);
     connect(stopButton,  &QPushButton::clicked, this, &MainWindow::onStopClicked);
-    connect(testButton,  &QPushButton::clicked, this, &MainWindow::onTestClicked);  // Connect Test button
+    connect(testButton,  &QPushButton::clicked, this, &MainWindow::onTestClicked);
 }
 
 MainWindow::~MainWindow()
 {
     // If a calculation is running, signal it to stop
     stopFlag.store(true);
-    calcWatcher->cancel();
-    calcWatcher->waitForFinished();
+    if(calcWatcher->isRunning()) {
+        calcWatcher->cancel();
+        calcWatcher->waitForFinished();
+    }
 }
 
 void MainWindow::onStartClicked()
@@ -134,13 +153,15 @@ void MainWindow::onTestClicked()
 {
     outputTextEdit->clear();
     outputTextEdit->append("----- Test Sequence for 13 -----");
-
-    // Call the test function from CollatzCalculator
-    CollatzTestResult testRes = CollatzCalculator::getTestSequence(13);
-
-    // Output the full sequence and its length.
-    outputTextEdit->append(QString("Sequence: %1").arg(testRes.sequence));
-    outputTextEdit->append(QString("Sequence length: %1").arg(testRes.length));
+    try {
+        // Call the test function from CollatzCalculator
+        CollatzTestResult testRes = CollatzCalculator::getTestSequence(13);
+        // Output the full sequence and its length.
+        outputTextEdit->append(QString("Sequence: %1").arg(testRes.sequence));
+        outputTextEdit->append(QString("Sequence length: %1").arg(testRes.length));
+    } catch (const std::exception &e) {
+        outputTextEdit->append(QString("Test Error: %1").arg(e.what()));
+    }
     outputTextEdit->append("----- End of Test -----");
 }
 
