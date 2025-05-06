@@ -1,34 +1,33 @@
-# C++ Pro Homework Repository
+## C++ Pro Coursework — Hillel IT School
 
-This repository contains the completed homework assignments for the **C++ Pro** advanced-level course offered by [Hillel IT School](https://ithillel.ua). The course covers modern C++ standards and advanced programming techniques, including multithreading, build systems, and frameworks like Boost and Qt.
+This repository contains homework assignments completed during the **C++ Pro** course at [Hillel IT School](https://ithillel.ua).
 
-## Course Overview
+📄 [View Certificate (PDF)](cert/cpp_pro_en_Anton_Lysenko.pdf)  
+📘 [Course Syllabus (PDF)](cert/course_content.pdf)
 
-The C++ Pro course consists of 24 lessons (two lessons per week) and includes hands-on practice with:
+## Final Project
 
-- **Modern C++ Standards**: C++11, C++14, C++17, C++20, and C++23
-- **Core C++ Features**: 
-  - Lambda functions
-  - Move semantics
-  - Smart pointers
-  - Range-based loops
-  - `std::filesystem` and `std::ranges`
-  - Thread synchronization with mutexes, semaphores, and thread-safe data structures
-- **Multithreading**: Creating and synchronizing threads
-- **Build Systems and Version Control**:
-  - Working with `CMake` and `gn`
-  - Using `git` for version control
-- **Debugging and Profiling Tools**: `gdb`, `valgrind`, `perf`, and `lldb`
-- **Frameworks**:
-  - Boost: `boost::asio`, `boost::filesystem`, `boost::thread`
-  - Qt: Qt Creator, Widgets, and QML
+The final assignment included a simple graphical application in Qt that calculates and visualizes the **Collatz sequence** (a.k.a. 3x+1 problem).
 
-The course culminates with a capstone project involving the creation of a graphical desktop application.
+🔗 [View Final Project (Qt GUI app)](final_project_QtCollatz/)
 
-## Repository Structure
+## 🏆 Achievements
 
-Each homework assignment is organized in its own directory
+- 🥇 **1st place** in the group rating  
+- ✅ Completed **12/12** assignments with top scores  
+- 📈 Final diploma grade: **Excellent**  
+- 🎁 Awarded a ₹3,000 discount for the next course as a performance reward
 
-## License
+## Instructor Feedback
 
-This repository is for educational purposes only. The content is based on assignments provided by the course and is intended to showcase personal learning progress.
+> **"Я шокований швидкістю і економією пам'яті. Тут оцінка не 100, а 100 мільйонів."**  
+> — Максим Безуглий, викладач курсу, 12.03.2025
+
+The instructor highlighted the solution’s:
+- ⚡ 10× faster execution compared to a baseline multithreaded version;
+- 💾 100× lower memory consumption;
+- ✅ Use of bitwise optimizations and zero memory preallocation;
+- ❌ Avoidance of inefficient multithreading and costly synchronization.
+
+> _"20 threads took 10 seconds, while a single-threaded solution took 3.3 seconds — this will be a great example for our final lesson."_  
+> — Instructor’s post-optimization reflection
